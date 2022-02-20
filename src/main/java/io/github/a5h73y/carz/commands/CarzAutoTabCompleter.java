@@ -1,11 +1,14 @@
 package io.github.a5h73y.carz.commands;
 
 import io.github.a5h73y.carz.Carz;
+import io.github.a5h73y.carz.model.CarDetails;
 import io.github.a5h73y.carz.other.AbstractPluginReceiver;
 import io.github.a5h73y.carz.other.CommandUsage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -71,7 +74,7 @@ public class CarzAutoTabCompleter extends AbstractPluginReceiver implements TabC
     }
 
     private List<String> populateChildCommands(String command) {
-        List<String> allowedCommands = new ArrayList<>();
+        List<String> allowedCommands = new LinkedList<>();
 
         switch (command) {
             case "add":
@@ -80,8 +83,16 @@ public class CarzAutoTabCompleter extends AbstractPluginReceiver implements TabC
                 allowedCommands = BLOCK_TYPES_LIST;
                 break;
             case "purchase":
+                List<Map.Entry<String, CarDetails>> carTypes = new LinkedList<Map.Entry<String, CarDetails>>(Carz.getInstance().getCarController().getCarTypes().entrySet());
+                allowedCommands = new LinkedList<>();
+                for (Map.Entry<String, CarDetails> carType : carTypes) {
+                    if (carType.getValue().isBuyable()) {
+                        allowedCommands.add(carType.getKey());
+                    }
+                }
+                break;
             case "spawn":
-                allowedCommands = new ArrayList<>(carz.getCarController().getCarTypes().keySet());
+                allowedCommands = new LinkedList<>(carz.getCarController().getCarTypes().keySet());
                 break;
             default:
                 break;

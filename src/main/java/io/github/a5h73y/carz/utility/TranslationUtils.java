@@ -53,8 +53,14 @@ public class TranslationUtils {
 	 * @return String of appropriate translation
 	 */
 	public static String getValueTranslation(String translationKey, String value, boolean prefix) {
-		return valuePlaceholder.matcher(getTranslation(translationKey, prefix))
-				.replaceAll(value == null ? "" : value);
+		value = value.replace("$", "\\$");
+		try {
+			return valuePlaceholder.matcher(getTranslation(translationKey, prefix))
+					.replaceAll(value == null ? "" : value);
+		} catch (IndexOutOfBoundsException e) {
+			PluginUtils.log(String.format("%s: %s", translationKey, value));
+			return "";
+		}
 	}
 
 	/**

@@ -1,8 +1,10 @@
 package io.github.a5h73y.carz.model;
 
-import org.bukkit.Material;
-
 public class CarDetails {
+
+	private final String name;
+
+	private final String lore;
 
 	private final double startMaxSpeed;
 
@@ -14,6 +16,8 @@ public class CarDetails {
 
 	private String fillMaterialData;
 
+	private boolean buyable;
+
 	/**
 	 * Car Details model.
 	 * Populate the car details, with a validation to ensure the numbers are positive.
@@ -24,14 +28,28 @@ public class CarDetails {
 	 * @param fuelUsage amount of fuel used during acceleration
 	 * @param fillMaterialData material to place inside the Minecart
 	 */
-	public CarDetails(double startMaxSpeed, double maxUpgradeSpeed, double acceleration,
-	                  double fuelUsage, String fillMaterialData) {
-
+	public CarDetails(String name, String lore, double startMaxSpeed, double maxUpgradeSpeed, double acceleration,
+	                  double fuelUsage, String fillMaterialData, boolean buyable) {
+		this.name = name;
+		this.lore = lore;
 		this.startMaxSpeed = Math.max(0.0, startMaxSpeed);
 		this.maxUpgradeSpeed = Math.max(0.0, maxUpgradeSpeed);
 		this.acceleration = Math.max(0.0, acceleration);
 		this.fuelUsage = Math.max(0.0, fuelUsage);
 		this.fillMaterialData = fillMaterialData;
+		this.buyable = buyable;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getRawName() {
+		return name.replaceAll("&.{1}", "");
+	}
+
+	public String getLore() {
+		return lore;
 	}
 
 	public double getStartMaxSpeed() {
@@ -52,6 +70,10 @@ public class CarDetails {
 
 	public String getFillMaterialData() {
 		return fillMaterialData;
+	}
+
+	public boolean isBuyable() {
+		return buyable;
 	}
 
 	@Override

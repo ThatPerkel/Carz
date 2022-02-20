@@ -163,14 +163,17 @@ public class CarUtils {
 
 			String maxSpeed = !hasUpgrade ? String.valueOf(details.getStartMaxSpeed()) :
 					carz.getCarDataPersistence().getValue(VEHICLE_SPEED, itemStack);
+			maxSpeed = String.valueOf((new Double(maxSpeed))*Carz.speed_conv);
 
 			String fuel = !hasFuel ? String.valueOf(carz.getFuelController().getMaxCapacity()) :
 					carz.getCarDataPersistence().getValue(VEHICLE_FUEL, itemStack);
 
 			List<String> lore = Arrays.asList(
-					TranslationUtils.getValueTranslation("CarDetails.Type", vehicleType, false),
-					TranslationUtils.getValueTranslation("CarDetails.MaxSpeed", maxSpeed, false),
-					TranslationUtils.getValueTranslation("CarDetails.Fuel", fuel, false));
+				TranslationUtils.getValueTranslation("CarDetails.Type", details.getRawName(), false),
+				TranslationUtils.getValueTranslation("CarDetails.Acceleration", new Double(details.getAcceleration()).toString(), false),
+				TranslationUtils.getValueTranslation("CarDetails.MaxSpeed", maxSpeed, false),
+				TranslationUtils.getValueTranslation("CarDetails.Fuel", fuel, false)
+			);
 
 			ItemMeta itemMeta = itemStack.getItemMeta();
 			itemMeta.setLore(lore);

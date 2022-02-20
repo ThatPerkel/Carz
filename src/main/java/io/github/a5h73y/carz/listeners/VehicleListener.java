@@ -14,13 +14,18 @@ import io.github.a5h73y.carz.enums.Permissions;
 import io.github.a5h73y.carz.event.EngineStartEvent;
 import io.github.a5h73y.carz.event.EngineStopEvent;
 import io.github.a5h73y.carz.model.Car;
+import io.github.a5h73y.carz.model.CarDetails;
 import io.github.a5h73y.carz.other.AbstractPluginReceiver;
 import io.github.a5h73y.carz.other.DelayTasks;
 import io.github.a5h73y.carz.utility.CarUtils;
 import io.github.a5h73y.carz.utility.PermissionUtils;
 import io.github.a5h73y.carz.utility.PlayerUtils;
+import io.github.a5h73y.carz.utility.PluginUtils;
 import io.github.a5h73y.carz.utility.TranslationUtils;
 import io.github.a5h73y.carz.utility.ValidationUtils;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -43,6 +48,7 @@ import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleUpdateEvent;
 import org.bukkit.util.Vector;
+import org.bukkit.util.VoxelShape;
 
 /**
  * Vehicle related events.
@@ -155,7 +161,8 @@ public class VehicleListener extends AbstractPluginReceiver implements Listener 
             return;
         }
 
-        if (Carz.getDefaultConfig().isOnlyOwnedCarsDrive() && !carz.getCarDataPersistence().has(VEHICLE_OWNER, vehicle)) {
+        if (Carz.getDefaultConfig().isOnlyOwnedCarsDrive()
+                && !carz.getCarDataPersistence().has(VEHICLE_OWNER, vehicle)) {
             return;
         }
 
@@ -231,17 +238,23 @@ public class VehicleListener extends AbstractPluginReceiver implements Listener 
             return;
         }
 
-        drivingCar.accelerate();
+        Double acc = drivingCar.getCarDetails().getAcceleration();
 
-        Vector vehicleVelocity = event.getVehicle().getVelocity();
-        Vector playerLocationVelocity = player.getLocation().getDirection();
-        Block blockBelow = event.getVehicle().getLocation().subtract(0.0D, 1.0D, 0.0D).getBlock();
+        Vector vehicleVelocity = event.getVehicle().getVelocity().clone();
+        // Multiply 2 to fix weird math bug (but only X & Z)
+        vehicleVelocity.multiply(new Vector(2, 1, 2));
+
+        // Dont manipulate with Y speed
+        Vector playerVelocity = player.getVelocity().setY(0);
+
+        // 0.875 to account some non-full block (e.g. grass path)
+        Block blockBelow = event.getVehicle().getLocation().subtract(0.0D, 0.875D, 0.0D).getBlock();
         Material materialBelow = blockBelow.getType();
         BlocksConfig blocksConfig = (BlocksConfig) Carz.getConfig(BLOCKS);
 
         if (blocksConfig.containsSpeedBlock(materialBelow)) {
             Double modifier = blocksConfig.getSpeedModifier(materialBelow);
-            drivingCar.applySpeedModifier(modifier);
+            acc *= modifier;
         }
 
         if (blocksConfig.containsLaunchBlock(materialBelow)) {
@@ -249,10 +262,53 @@ public class VehicleListener extends AbstractPluginReceiver implements Listener 
             vehicleVelocity.setY(vehicleVelocity.getY() + amount);
         }
 
-        double carSpeed = drivingCar.getCurrentSpeed();
+        float playerYaw = player.getLocation().getYaw();
+        float vehicleYaw = event.getVehicle().getLocation().getYaw();
+        
+        // Get player movement input & normalize it
+        Vector playerInput = playerVelocity.clone().rotateAroundY(Math.toRadians(playerYaw));
 
-        vehicleVelocity.setX((playerLocationVelocity.getX() / 100.0) * carSpeed);
-        vehicleVelocity.setZ((playerLocationVelocity.getZ() / 100.0) * carSpeed);
+        /**
+         * Vehicle acceleration
+         */
+        // Create new vector from Z movement and transform it
+        Vector accV = new Vector(0, 0, playerInput.getZ());
+        accV.rotateAroundY(Math.toRadians(-playerYaw));
+        accV.multiply(acc);
+        vehicleVelocity.add(accV);
+
+        // Friction (if the Z input is close-to-zero)
+        if (Math.abs(playerInput.getZ()) < 0.001) {
+            Vector friction = vehicleVelocity.clone();
+            friction.setY(0).multiply(-8);
+            // Limit friction to certain value
+            if (friction.length() > 1) {
+                friction.normalize();
+            }
+            // Lower it
+            friction.multiply(0.012);
+            // Apply friction
+            vehicleVelocity.add(friction);
+        }
+
+        /**
+         * Process wheel steering
+         */
+
+        double steer = 5*playerInput.getX()*acc;
+        vehicleYaw -= steer;
+
+        // Apply steering
+        vehicleVelocity.rotateAroundY(steer);
+        event.getVehicle().setRotation(vehicleYaw, event.getVehicle().getLocation().getPitch());
+
+        // Stop for really small values
+        if (Math.abs(vehicleVelocity.getX()) < 0.01) {
+            vehicleVelocity.setX(0);
+        }
+        if (Math.abs(vehicleVelocity.getZ()) < 0.01) {
+            vehicleVelocity.setZ(0);
+        }
 
         Location playerLocation = player.getLocation().clone();
         playerLocation.setPitch(0f);
@@ -262,23 +318,60 @@ public class VehicleListener extends AbstractPluginReceiver implements Listener 
 
         // determine if the Car should start climbing
         boolean isClimbable = calculateIsClimbable(blockBelow, twoBlocksAhead, blocksConfig);
+        double climbStrength = Math.max(carz.getConfig().getClimbBlockStrength(), 0.1);
 
         if (isClimbable) {
             Location above = twoBlocksAhead.add(0, 1, 0);
 
             // if the block above it is AIR, allow to climb
             if (above.getBlock().getType() == AIR) {
-                vehicleVelocity.setY(carz.getConfig().getClimbBlockStrength());
-
-                vehicleVelocity.setX(playerLocationVelocity.getX() / 8.0);
-                vehicleVelocity.setZ(playerLocationVelocity.getZ() / 8.0);
+                vehicleVelocity.setY(climbStrength);
+            } else {
+            }
+        } else {
+            if (blockBelow.getType() == AIR || blockBelow.getType() == Material.WATER
+                    || blockBelow.getType() == Material.LAVA) {
+                // Pull the vehicle down
+                vehicleVelocity.setY(Math.max(vehicleVelocity.getY() - 0.1 * climbStrength, -0.5));
+            } else {
+                vehicleVelocity.setY(-0.01);
+                // Check if not on a non-full block (not slab, but e.g. dirt path)
+                double y = event.getVehicle().getLocation().getY();
+                if (y - 1 < blockBelow.getY() && y - 0.875 > blockBelow.getY()) {
+                    vehicleVelocity.setY(Math.abs(y - blockBelow.getY() - 1) * 4);
+                }
             }
         }
 
+        // Check max speed
+        double currSpeed = vehicleVelocity.clone().setY(0).length();
+        double maxSpeed = drivingCar.getMaxSpeed();
+        if (currSpeed > maxSpeed) {
+            vehicleVelocity.multiply(maxSpeed / currSpeed);
+        }
+
+        // Limit Y speed to climb strength
+        vehicleVelocity.setY(Math.min(vehicleVelocity.getY(), climbStrength));
+
         event.getVehicle().setVelocity(vehicleVelocity);
+        drivingCar.consumeFuel(playerVelocity.length());
+
+        /**
+         * Render Actionbar
+         * conv is used to convert internal units to km/h
+         * 1 unit -> ~10 blocks (m)/s -> 36 km/h
+         */
+        final double speed = vehicleVelocity.clone().setY(0).length();
+        String guiString = String.format("%s §7| §bRychlost: §f%.1f km/h §7| §bPalivo: §f%.1f§b/§f%.0f §bl",
+                drivingCar.getCarDetails().getName(),
+                speed * Carz.speed_conv,
+                drivingCar.getCurrentFuel(),
+                carz.getFuelController().getMaxCapacity()).replace("&", "§");
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(guiString));
     }
 
     private boolean calculateIsClimbable(Block blockBelow, Location twoBlocksAhead, BlocksConfig blocksConfig) {
+        blockBelow.getCollisionShape();
         // if the block ahead isn't solid (i.e. tall grass)
         if (blockBelow.getType() == AIR || !twoBlocksAhead.getBlock().getType().isSolid()) {
             return false;
@@ -322,7 +415,8 @@ public class VehicleListener extends AbstractPluginReceiver implements Listener 
             String owner = carz.getCarDataPersistence().getValue(VEHICLE_OWNER, minecart);
 
             if (!event.getAttacker().getName().equals(owner)
-                    && !PermissionUtils.hasStrictPermission((Player) event.getAttacker(), Permissions.BYPASS_OWNER, false)) {
+                    && !PermissionUtils.hasStrictPermission((Player) event.getAttacker(), Permissions.BYPASS_OWNER,
+                            false)) {
                 TranslationUtils.sendValueTranslation("Error.Owned", owner, event.getAttacker());
 
             } else {

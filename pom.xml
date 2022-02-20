@@ -47,8 +47,8 @@
         </repository>
         <!-- Placeholder API Repo -->
         <repository>
-            <id>placeholderapi-repo</id>
-            <url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
         <!-- InventoryGui -->
         <repository>
@@ -62,15 +62,8 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.16.3-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+            <version>1.18.1-R0.1-SNAPSHOT</version>
+          </dependency>
         <!-- Vault API -->
         <dependency>
             <groupId>net.milkbowl.vault</groupId>

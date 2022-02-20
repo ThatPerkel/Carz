@@ -39,21 +39,15 @@ public class Car {
 	}
 
 	/**
-	 * Car Acceleration.
-	 * The speed of the car will increase until it reaches its acceleration limit.
-	 * The fuel will be decreased by its configured amount.
+	 * Consume fuel defined by config
+	 * 
+	 * @param coef coeficient dependent on player input
 	 */
-	public void accelerate() {
-		// if we haven't reached the top speed
-		if (this.currentSpeed < this.maxSpeed) {
-			this.currentSpeed += this.carDetails.getAcceleration();
-
-		} else if (this.currentSpeed > this.maxSpeed) {
-			// we have exceeded the maxSpeed (i.e. by boosting)
-			this.currentSpeed = Math.floor(Math.max(this.maxSpeed, this.currentSpeed * 0.8));
+	public void consumeFuel(double coef) {
+		this.currentFuel -= this.carDetails.getFuelUsage()*coef;
+		if (this.currentFuel < 0) {
+			this.currentFuel = 0;
 		}
-
-		this.currentFuel -= this.carDetails.getFuelUsage();
 	}
 
 	/**
@@ -87,7 +81,6 @@ public class Car {
 		return "Entity Id: " + entityId
 				+ ", \nCar Type: " + carType
 				+ ", \nMax Speed: " + maxSpeed
-				+ ", \nCurrent Speed: " + currentSpeed
 				+ ", \nCurrent Fuel: " + currentFuel
 				+ "\n" + carDetails;
 	}
@@ -98,13 +91,11 @@ public class Car {
 	 * @return car detail summary
 	 */
 	public String getSummary() {
-		return TranslationUtils.getValueTranslation("CarDetails.Type", carType, false)
-				+ "\n" + TranslationUtils.getValueTranslation(
-						"CarDetails.MaxSpeed", String.valueOf(maxSpeed), false)
-				+ "\n" + TranslationUtils.getValueTranslation(
-						"CarDetails.CurrentSpeed", String.valueOf(currentSpeed), false)
+		return TranslationUtils.getValueTranslation("CarDetails.Type", carDetails.getRawName(), false)
 				+ "\n" + TranslationUtils.getValueTranslation(
 						"CarDetails.Acceleration", String.valueOf(carDetails.getAcceleration()), false)
+				+ "\n" + TranslationUtils.getValueTranslation(
+						"CarDetails.MaxSpeed", String.valueOf(maxSpeed), false)
 				+ "\n" + TranslationUtils.getValueTranslation(
 						"CarDetails.Fuel", String.valueOf(currentFuel), false);
 	}

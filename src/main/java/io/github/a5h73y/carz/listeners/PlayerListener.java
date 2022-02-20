@@ -53,11 +53,6 @@ public class PlayerListener extends AbstractPluginReceiver implements Listener {
             return;
         }
 
-        // make sure they aren't trying to place a normal Minecart (i.e on rails)
-        if (ValidationUtils.isRail(event.getClickedBlock())) {
-            return;
-        }
-
         Player player = event.getPlayer();
 
         if (!ValidationUtils.canPlaceCar(player, event.getClickedBlock().getType())) {
@@ -73,9 +68,17 @@ public class PlayerListener extends AbstractPluginReceiver implements Listener {
 
         ItemStack carInHand = player.getInventory().getItemInMainHand();
 
+        // make sure they aren't trying to place a normal Minecart (i.e on rails)
+        if (ValidationUtils.isRail(event.getClickedBlock())) {
+            if (carz.getCarDataPersistence().has(VEHICLE_TYPE, carInHand)) {
+                event.setCancelled(true);
+            }
+            return;
+        }
+
         // if only owned cars can drive and it doesn't have a vehicle type, ignore it.
         if (!carz.getCarDataPersistence().has(VEHICLE_TYPE, carInHand)) {
-            if (Carz.getDefaultConfig().isOnlyOwnedCarsDrive()) {
+            if (!Carz.getDefaultConfig().isDriveAnyMinecart()) {
                 return;
             }
 

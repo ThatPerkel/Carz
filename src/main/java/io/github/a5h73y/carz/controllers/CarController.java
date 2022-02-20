@@ -27,7 +27,7 @@ import org.bukkit.entity.Vehicle;
  */
 public class CarController extends AbstractPluginReceiver {
 
-    public static final String DEFAULT_CAR = "default";
+    public static final String DEFAULT_CAR = "gcm";
 
     // Vehicle ID with it's associated Car
     private final Map<Integer, Car> entityIdToCar = new HashMap<>();
@@ -285,12 +285,15 @@ public class CarController extends AbstractPluginReceiver {
 
         for (String carType : allCarTypes) {
             String configPath = "CarTypes." + carType;
+            String name = carz.getConfig().getString(configPath + ".Name");
+            String lore = carz.getConfig().getString(configPath + ".Lore");
             double startSpeed = carz.getConfig().getDouble(configPath + ".StartMaxSpeed");
             double maxSpeed = carz.getConfig().getDouble(configPath + ".MaxUpgradeSpeed");
             double acceleration = carz.getConfig().getDouble(configPath + ".Acceleration");
             double fuelUsage = carz.getConfig().getDouble(configPath + ".FuelUsage");
             String fillMaterialData = carz.getConfig().getString(configPath + ".FillMaterialData");
-            carTypes.put(carType, new CarDetails(startSpeed, maxSpeed, acceleration, fuelUsage, fillMaterialData));
+            boolean buyable = carz.getConfig().getBoolean(configPath + ".Buyable", true);
+            carTypes.put(carType, new CarDetails(name, lore, startSpeed, maxSpeed, acceleration, fuelUsage, fillMaterialData, buyable));
         }
     }
 

@@ -117,6 +117,10 @@ public class ValidationUtils {
 			return false;
 		}
 
+		if (!Carz.getDefaultConfig().getBoolean("CarTypes." + carType.toLowerCase() + ".Buyable", true)) {
+			return false;
+		}
+
 		if (player.isInsideVehicle()) {
 			TranslationUtils.sendTranslation("Error.InCar", player);
 			return false;

@@ -37,6 +37,7 @@ public class Carz extends JavaPlugin {
 
     private static final int BSTATS_PLUGIN_ID = 2371;
     private static final int SPIGOT_PLUGIN_ID = 56255;
+    public static final double speed_conv = 36;
     private static Carz instance;
 
     private BountifulApi bountifulApi;

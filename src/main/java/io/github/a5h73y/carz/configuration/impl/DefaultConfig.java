@@ -73,12 +73,15 @@ public class DefaultConfig extends CarzConfiguration {
 		this.addDefault("Other.UseEffects", true);
 		this.addDefault("Other.UsePermissions", true);
 
-		this.addDefault("CarTypes.default.StartMaxSpeed", 60.0);
-		this.addDefault("CarTypes.default.MaxUpgradeSpeed", 200.0);
-		this.addDefault("CarTypes.default.Acceleration", 5.0);
-		this.addDefault("CarTypes.default.FuelUsage", 1.0);
-		this.addDefault("CarTypes.default.FillMaterialData", "");
-		this.addDefault("CarTypes.default.Cost", 10.0);
+		this.addDefault("CarTypes.gcm.Name", "GCM Shoebox");
+		this.addDefault("CarTypes.gcm.Lore", "");
+		this.addDefault("CarTypes.gcm.StartMaxSpeed", 60.0);
+		this.addDefault("CarTypes.gcm.StartMaxSpeed", 60.0);
+		this.addDefault("CarTypes.gcm.MaxUpgradeSpeed", 200.0);
+		this.addDefault("CarTypes.gcm.Acceleration", 5.0);
+		this.addDefault("CarTypes.gcm.FuelUsage", 1.0);
+		this.addDefault("CarTypes.gcm.FillMaterialData", "");
+		this.addDefault("CarTypes.gcm.Cost", 10.0);
 
 		this.addDefault("Version", Double.valueOf(Carz.getInstance().getDescription().getVersion()));
 
@@ -103,6 +106,10 @@ public class DefaultConfig extends CarzConfiguration {
 
 	public boolean isOnlyOwnedCarsDrive() {
 		return this.getBoolean("Other.OnlyOwnedCarsDrive");
+	}
+
+	public boolean isDriveAnyMinecart() {
+		return this.getBoolean("Other.DriveAnyMinecart");
 	}
 
 	public boolean isControlCarsWhileFalling() {
