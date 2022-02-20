@@ -52,7 +52,7 @@ public class CarzUpdater {
 			connection.addRequestProperty("User-Agent", USER_AGENT);
 
 			InputStreamReader reader = new InputStreamReader(connection.getInputStream());
-			JsonElement element = new JsonParser().parse(reader);
+			JsonElement element = JsonParser.parseReader(reader);
 
 			reader.close();
 			connection.disconnect();

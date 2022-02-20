@@ -3,6 +3,10 @@ package io.github.a5h73y.carz.configuration.impl;
 import io.github.a5h73y.carz.Carz;
 import io.github.a5h73y.carz.configuration.CarzConfiguration;
 import io.github.a5h73y.carz.utility.TranslationUtils;
+
+import java.util.LinkedList;
+import java.util.List;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -19,7 +23,9 @@ public class DefaultConfig extends CarzConfiguration {
 	 */
 	@Override
 	protected void initializeConfig() {
-		this.options().header("==== Carz Config ==== #");
+		List<String> header = new LinkedList<String>();
+		header.add("==== Carz Config ==== #");
+		this.options().setHeader(header);
 
 		this.addDefault("Key.Material", "STICK");
 		this.addDefault("Key.Glow", true);

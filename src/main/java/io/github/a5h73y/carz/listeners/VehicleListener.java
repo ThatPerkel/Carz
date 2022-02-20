@@ -14,7 +14,6 @@ import io.github.a5h73y.carz.enums.Permissions;
 import io.github.a5h73y.carz.event.EngineStartEvent;
 import io.github.a5h73y.carz.event.EngineStopEvent;
 import io.github.a5h73y.carz.model.Car;
-import io.github.a5h73y.carz.model.CarDetails;
 import io.github.a5h73y.carz.other.AbstractPluginReceiver;
 import io.github.a5h73y.carz.other.DelayTasks;
 import io.github.a5h73y.carz.utility.CarUtils;
@@ -48,7 +47,6 @@ import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleUpdateEvent;
 import org.bukkit.util.Vector;
-import org.bukkit.util.VoxelShape;
 
 /**
  * Vehicle related events.
@@ -321,26 +319,7 @@ public class VehicleListener extends AbstractPluginReceiver implements Listener 
         double climbStrength = Math.max(carz.getConfig().getClimbBlockStrength(), 0.1);
 
         if (isClimbable) {
-            Location above = twoBlocksAhead.add(0, 1, 0);
-
-            // if the block above it is AIR, allow to climb
-            if (above.getBlock().getType() == AIR) {
-                vehicleVelocity.setY(climbStrength);
-            } else {
-            }
-        } else {
-            if (blockBelow.getType() == AIR || blockBelow.getType() == Material.WATER
-                    || blockBelow.getType() == Material.LAVA) {
-                // Pull the vehicle down
-                vehicleVelocity.setY(Math.max(vehicleVelocity.getY() - 0.1 * climbStrength, -0.5));
-            } else {
-                vehicleVelocity.setY(-0.01);
-                // Check if not on a non-full block (not slab, but e.g. dirt path)
-                double y = event.getVehicle().getLocation().getY();
-                if (y - 1 < blockBelow.getY() && y - 0.875 > blockBelow.getY()) {
-                    vehicleVelocity.setY(Math.abs(y - blockBelow.getY() - 1) * 4);
-                }
-            }
+            PluginUtils.log("Should climb");
         }
 
         // Check max speed
@@ -371,7 +350,6 @@ public class VehicleListener extends AbstractPluginReceiver implements Listener 
     }
 
     private boolean calculateIsClimbable(Block blockBelow, Location twoBlocksAhead, BlocksConfig blocksConfig) {
-        blockBelow.getCollisionShape();
         // if the block ahead isn't solid (i.e. tall grass)
         if (blockBelow.getType() == AIR || !twoBlocksAhead.getBlock().getType().isSolid()) {
             return false;
