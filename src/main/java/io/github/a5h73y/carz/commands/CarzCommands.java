@@ -55,7 +55,7 @@ public class CarzCommands extends AbstractPluginReceiver implements CommandExecu
         Player player = (Player) sender;
 
         if (args.length == 0) {
-            player.sendMessage(Carz.getPrefix() + "proudly created by " + ChatColor.AQUA + "A5H73Y");
+            player.sendMessage(Carz.getPrefix() + "proudly created by " + ChatColor.AQUA + "A5H73Y&Perkel");
             TranslationUtils.sendTranslation("Help.Commands", player);
             return false;
         }
@@ -302,7 +302,7 @@ public class CarzCommands extends AbstractPluginReceiver implements CommandExecu
             case "version":
                 player.sendMessage(Carz.getPrefix() + "Server is running Carz " + ChatColor.GRAY
                         + carz.getDescription().getVersion());
-                player.sendMessage("This plugin was developed by " + ChatColor.GOLD + "A5H73Y");
+                player.sendMessage("This plugin was developed by " + ChatColor.GOLD + "A5H73Y&Perkel");
                 break;
 
             case "reload":

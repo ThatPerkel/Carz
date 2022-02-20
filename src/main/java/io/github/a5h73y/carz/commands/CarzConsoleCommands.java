@@ -34,7 +34,7 @@ public class CarzConsoleCommands extends AbstractPluginReceiver implements Comma
         }
 
         if (args.length < 1) {
-            sender.sendMessage(Carz.getPrefix() + "proudly created by " + ChatColor.AQUA + "A5H73Y");
+            sender.sendMessage(Carz.getPrefix() + "proudly created by " + ChatColor.AQUA + "A5H73Y&Perkel");
             TranslationUtils.sendTranslation("Carz.ConsoleCommands", sender);
             return false;
         }
